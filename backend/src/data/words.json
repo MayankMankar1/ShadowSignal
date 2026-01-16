@@ -1,0 +1,294 @@
+{
+  "domains": [
+    {
+      "name": "Food & Cuisine",
+      "words": [
+        {
+          "word": "Pizza",
+          "similar": ["Pasta", "Burger", "Sandwich", "Taco", "Lasagna"]
+        },
+        {
+          "word": "Coffee",
+          "similar": ["Tea", "Espresso", "Cappuccino", "Latte", "Mocha"]
+        },
+        {
+          "word": "Chocolate",
+          "similar": ["Candy", "Caramel", "Fudge", "Brownie", "Truffle"]
+        },
+        {
+          "word": "Salad",
+          "similar": ["Soup", "Appetizer", "Coleslaw", "Caesar", "Greens"]
+        },
+        {
+          "word": "Sushi",
+          "similar": ["Sashimi", "Maki", "Tempura", "Ramen", "Dim Sum"]
+        },
+        {
+          "word": "Ice Cream",
+          "similar": ["Gelato", "Frozen Yogurt", "Sorbet", "Sundae", "Popsicle"]
+        }
+      ]
+    },
+    {
+      "name": "Animals",
+      "words": [
+        {
+          "word": "Dog",
+          "similar": ["Cat", "Wolf", "Fox", "Puppy", "Husky"]
+        },
+        {
+          "word": "Elephant",
+          "similar": ["Rhino", "Hippo", "Giraffe", "Mammoth", "Buffalo"]
+        },
+        {
+          "word": "Eagle",
+          "similar": ["Hawk", "Falcon", "Owl", "Vulture", "Condor"]
+        },
+        {
+          "word": "Dolphin",
+          "similar": ["Whale", "Shark", "Seal", "Porpoise", "Orca"]
+        },
+        {
+          "word": "Lion",
+          "similar": ["Tiger", "Leopard", "Cheetah", "Panther", "Jaguar"]
+        },
+        {
+          "word": "Rabbit",
+          "similar": ["Hamster", "Guinea Pig", "Squirrel", "Mouse", "Bunny"]
+        }
+      ]
+    },
+    {
+      "name": "Sports & Activities",
+      "words": [
+        {
+          "word": "Soccer",
+          "similar": ["Football", "Basketball", "Hockey", "Rugby", "Volleyball"]
+        },
+        {
+          "word": "Swimming",
+          "similar": ["Diving", "Surfing", "Kayaking", "Snorkeling", "Water Polo"]
+        },
+        {
+          "word": "Tennis",
+          "similar": ["Badminton", "Squash", "Ping Pong", "Racquetball", "Pickleball"]
+        },
+        {
+          "word": "Running",
+          "similar": ["Jogging", "Sprinting", "Marathon", "Track", "Walking"]
+        },
+        {
+          "word": "Boxing",
+          "similar": ["Wrestling", "MMA", "Karate", "Judo", "Kickboxing"]
+        },
+        {
+          "word": "Golf",
+          "similar": ["Mini Golf", "Disc Golf", "Croquet", "Polo", "Cricket"]
+        }
+      ]
+    },
+    {
+      "name": "Entertainment",
+      "words": [
+        {
+          "word": "Movie",
+          "similar": ["Film", "Cinema", "Theater", "Documentary", "Show"]
+        },
+        {
+          "word": "Concert",
+          "similar": ["Festival", "Gig", "Performance", "Recital", "Opera"]
+        },
+        {
+          "word": "Video Game",
+          "similar": ["Board Game", "Card Game", "Mobile Game", "Arcade", "PC Game"]
+        },
+        {
+          "word": "Netflix",
+          "similar": ["Streaming", "TV Show", "Series", "YouTube", "Hulu"]
+        },
+        {
+          "word": "Podcast",
+          "similar": ["Radio", "Audiobook", "Talk Show", "Interview", "Broadcast"]
+        },
+        {
+          "word": "Magic Show",
+          "similar": ["Circus", "Comedy Show", "Stand-up", "Talent Show", "Variety Show"]
+        }
+      ]
+    },
+    {
+      "name": "Travel & Places",
+      "words": [
+        {
+          "word": "Beach",
+          "similar": ["Ocean", "Coast", "Shore", "Island", "Resort"]
+        },
+        {
+          "word": "Mountain",
+          "similar": ["Hill", "Peak", "Summit", "Valley", "Cliff"]
+        },
+        {
+          "word": "Hotel",
+          "similar": ["Motel", "Resort", "Hostel", "Inn", "Lodge"]
+        },
+        {
+          "word": "Airport",
+          "similar": ["Terminal", "Station", "Airplane", "Runway", "Gate"]
+        },
+        {
+          "word": "Museum",
+          "similar": ["Gallery", "Exhibition", "Library", "Archive", "Monument"]
+        },
+        {
+          "word": "Restaurant",
+          "similar": ["Cafe", "Diner", "Bistro", "Bar", "Pub"]
+        }
+      ]
+    },
+    {
+      "name": "Technology",
+      "words": [
+        {
+          "word": "Smartphone",
+          "similar": ["Tablet", "Laptop", "Computer", "iPhone", "Android"]
+        },
+        {
+          "word": "Internet",
+          "similar": ["WiFi", "Network", "Web", "Browser", "Online"]
+        },
+        {
+          "word": "Robot",
+          "similar": ["AI", "Machine", "Automation", "Bot", "Android"]
+        },
+        {
+          "word": "Camera",
+          "similar": ["Webcam", "DSLR", "Lens", "Tripod", "Photograph"]
+        },
+        {
+          "word": "Headphones",
+          "similar": ["Earbuds", "Speaker", "Microphone", "AirPods", "Audio"]
+        },
+        {
+          "word": "Television",
+          "similar": ["Monitor", "Screen", "Display", "Projector", "Smart TV"]
+        }
+      ]
+    },
+    {
+      "name": "Nature",
+      "words": [
+        {
+          "word": "Forest",
+          "similar": ["Jungle", "Woods", "Grove", "Rainforest", "Woodland"]
+        },
+        {
+          "word": "River",
+          "similar": ["Stream", "Creek", "Lake", "Pond", "Waterfall"]
+        },
+        {
+          "word": "Desert",
+          "similar": ["Sahara", "Oasis", "Sand Dunes", "Cactus", "Wasteland"]
+        },
+        {
+          "word": "Garden",
+          "similar": ["Park", "Yard", "Lawn", "Greenhouse", "Orchard"]
+        },
+        {
+          "word": "Volcano",
+          "similar": ["Earthquake", "Eruption", "Lava", "Magma", "Crater"]
+        },
+        {
+          "word": "Rainbow",
+          "similar": ["Sunset", "Sunrise", "Aurora", "Sky", "Clouds"]
+        }
+      ]
+    },
+    {
+      "name": "Professions",
+      "words": [
+        {
+          "word": "Doctor",
+          "similar": ["Nurse", "Surgeon", "Physician", "Dentist", "Paramedic"]
+        },
+        {
+          "word": "Teacher",
+          "similar": ["Professor", "Tutor", "Instructor", "Coach", "Mentor"]
+        },
+        {
+          "word": "Chef",
+          "similar": ["Cook", "Baker", "Barista", "Waiter", "Bartender"]
+        },
+        {
+          "word": "Pilot",
+          "similar": ["Captain", "Driver", "Navigator", "Astronaut", "Conductor"]
+        },
+        {
+          "word": "Artist",
+          "similar": ["Painter", "Sculptor", "Designer", "Musician", "Writer"]
+        },
+        {
+          "word": "Detective",
+          "similar": ["Police", "Investigator", "Spy", "Agent", "Sheriff"]
+        }
+      ]
+    },
+    {
+      "name": "Vehicles",
+      "words": [
+        {
+          "word": "Car",
+          "similar": ["Truck", "Van", "SUV", "Jeep", "Sedan"]
+        },
+        {
+          "word": "Bicycle",
+          "similar": ["Motorcycle", "Scooter", "Skateboard", "Tricycle", "Moped"]
+        },
+        {
+          "word": "Airplane",
+          "similar": ["Helicopter", "Jet", "Plane", "Glider", "Drone"]
+        },
+        {
+          "word": "Ship",
+          "similar": ["Boat", "Yacht", "Ferry", "Cruise", "Sailboat"]
+        },
+        {
+          "word": "Train",
+          "similar": ["Metro", "Subway", "Tram", "Railway", "Locomotive"]
+        },
+        {
+          "word": "Rocket",
+          "similar": ["Spacecraft", "Shuttle", "Satellite", "Spaceship", "Capsule"]
+        }
+      ]
+    },
+    {
+      "name": "Household Items",
+      "words": [
+        {
+          "word": "Chair",
+          "similar": ["Sofa", "Couch", "Stool", "Bench", "Recliner"]
+        },
+        {
+          "word": "Lamp",
+          "similar": ["Chandelier", "Flashlight", "Candle", "Light", "Lantern"]
+        },
+        {
+          "word": "Mirror",
+          "similar": ["Window", "Glass", "Reflection", "Frame", "Picture"]
+        },
+        {
+          "word": "Clock",
+          "similar": ["Watch", "Timer", "Alarm", "Stopwatch", "Sundial"]
+        },
+        {
+          "word": "Refrigerator",
+          "similar": ["Freezer", "Oven", "Microwave", "Dishwasher", "Toaster"]
+        },
+        {
+          "word": "Bed",
+          "similar": ["Mattress", "Pillow", "Blanket", "Hammock", "Bunk"]
+        }
+      ]
+    }
+  ]
+}
