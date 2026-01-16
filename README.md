@@ -4,7 +4,7 @@ A real-time multiplayer social deduction party game built with modern web techno
 
 ![Game Modes](https://img.shields.io/badge/Modes-Infiltrator%20%7C%20Spy-purple)
 ![Players](https://img.shields.io/badge/Players-3--10-green)
-![Real--time](https://img.shields.io/badge/Real--time-Socket.io-blue)
+![Real-time](https://img.shields.io/badge/Real--time-Socket.io-blue)
 
 ---
 
@@ -28,21 +28,20 @@ Shadow Signal is a social deduction game where players try to identify the impos
 
 | Mode | Description |
 |------|-------------|
-| **🎭 Infiltrator** | One player has NO word and must blend in by listening to others |
-| **🔍 Spy** | One player has a SIMILAR word and must avoid detection |
+| 🎭 **Infiltrator** | One player has NO word and must blend in by listening to others |
+| 🔍 **Spy** | One player has a SIMILAR word and must avoid detection |
 
 ### Game Flow
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   LOBBY     │────▶│  SPEAKING   │────▶│   VOTING    │────▶│  RESULTS    │
-│  (Waiting)  │     │  (30s/turn) │     │ (All vote)  │     │ (Eliminate) │
-└─────────────┘     └─────────────┘     └─────────────┘     └──────┬──────┘
-                                                                   │
-                                              ┌────────────────────┴────────────────────┐
-                                              ▼                                         ▼
-                                        Game Continues                            Game Ends
-                                        (Next Round)                          (Winner Declared)
+LOBBY → SPEAKING → VOTING → RESULTS
+         ↓           ↓         ↓
+    (30s/turn)   (All vote)  (Eliminate)
+                               ↓
+              ┌────────────────┴────────────────┐
+              ↓                                 ↓
+        Game Continues                     Game Ends
+        (Next Round)                   (Winner Declared)
 ```
 
 ---
@@ -52,46 +51,38 @@ Shadow Signal is a social deduction game where players try to identify the impos
 ### High-Level Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              CLIENT (Browser)                                │
-│  ┌─────────────────────────────────────────────────────────────────────────┐│
-│  │                         Next.js Frontend                                 ││
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                   ││
-│  │  │  Home Page   │  │  Room Page   │  │  Voice Chat  │                   ││
-│  │  │  (Create/    │  │  (Game UI,   │  │  (WebRTC     │                   ││
-│  │  │   Join)      │  │   Phases)    │  │   P2P Audio) │                   ││
-│  │  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘                   ││
-│  │         │                 │                 │                            ││
-│  │         └─────────────────┼─────────────────┘                            ││
-│  │                           │                                              ││
-│  │                    ┌──────▼───────┐                                      ││
-│  │                    │ Socket.io    │                                      ││
-│  │                    │ Client       │                                      ││
-│  │                    └──────┬───────┘                                      ││
-│  └───────────────────────────┼──────────────────────────────────────────────┘│
-└──────────────────────────────┼───────────────────────────────────────────────┘
-                               │
-                    WebSocket Connection
-                               │
-┌──────────────────────────────┼───────────────────────────────────────────────┐
-│                              │           SERVER                              │
-│  ┌───────────────────────────▼──────────────────────────────────────────┐   │
-│  │                      Express + Socket.io                              │   │
-│  │  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐          │   │
-│  │  │ Room Handlers  │  │  Game State    │  │ Voice Signaling│          │   │
-│  │  │ - create-room  │  │  - rooms Map   │  │ - offer/answer │          │   │
-│  │  │ - join-room    │  │  - players     │  │ - ICE candidates│         │   │
-│  │  │ - start-game   │  │  - phases      │  │ - mute states  │          │   │
-│  │  │ - cast-vote    │  │  - votes       │  │                │          │   │
-│  │  └────────────────┘  └────────────────┘  └────────────────┘          │   │
-│  └──────────────────────────────────────────────────────────────────────┘   │
-│                                                                              │
-│  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │                         In-Memory Store                               │   │
-│  │  rooms: Map<roomCode, Room>                                          │   │
-│  │  - hostId, players[], phase, turnOrder, votes, eliminated, etc.      │   │
-│  └──────────────────────────────────────────────────────────────────────┘   │
-└──────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    CLIENT (Browser)                         │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │               Next.js Frontend                         │  │
+│  │                                                        │  │
+│  │   Home Page        Room Page         Voice Chat        │  │
+│  │   (Create/Join)    (Game UI)         (WebRTC P2P)      │  │
+│  │                                                        │  │
+│  │                    Socket.io Client                    │  │
+│  └───────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                   WebSocket Connection
+                            │
+┌─────────────────────────────────────────────────────────────┐
+│                      SERVER                                  │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │              Express + Socket.io                       │  │
+│  │                                                        │  │
+│  │  Room Handlers    Game State       Voice Signaling     │  │
+│  │  - create-room    - rooms Map      - offer/answer      │  │
+│  │  - join-room      - players        - ICE candidates    │  │
+│  │  - start-game     - phases         - mute states       │  │
+│  │  - cast-vote      - votes                              │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                              │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │                  In-Memory Store                       │  │
+│  │  rooms: Map<roomCode, Room>                            │  │
+│  │  - hostId, players[], phase, turnOrder, votes, etc.    │  │
+│  └───────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ### Directory Structure
@@ -107,10 +98,8 @@ shadow-signal/
 │   │   │   └── room.handlers.ts  # All socket event handlers
 │   │   ├── state/
 │   │   │   └── rooms.ts          # Game state management
-│   │   ├── utils/
-│   │   │   └── generateRoomCode.ts
-│   │   └── data/
-│   │       └── words.json        # Word dataset (10 domains)
+│   │   └── utils/
+│   │       └── generateRoomCode.ts
 │   └── package.json
 │
 ├── frontend/
@@ -138,37 +127,13 @@ shadow-signal/
 
 The game uses **bidirectional WebSocket communication** for instant updates across all connected clients.
 
-#### Event Architecture
-
-```
-CLIENT                           SERVER                           CLIENT
-  │                                │                                │
-  │  ──── create-room ────────▶   │                                │
-  │  ◀──── room-created ───────   │                                │
-  │                                │                                │
-  │                                │   ◀──── join-room ────────    │
-  │  ◀──── room-updated ───────   │   ──── room-updated ──────▶   │
-  │                                │                                │
-  │  ──── start-game ─────────▶   │                                │
-  │  ◀──── room-updated ───────   │   ──── room-updated ──────▶   │
-  │       (with roles/words)       │       (with roles/words)       │
-  │                                │                                │
-  │  ◀──── room-updated ───────   │   ──── room-updated ──────▶   │
-  │       (turn changes)           │       (turn changes)           │
-  │                                │                                │
-  │  ──── cast-vote ──────────▶   │                                │
-  │                                │   ◀──── cast-vote ────────    │
-  │  ◀──── room-updated ───────   │   ──── room-updated ──────▶   │
-  │       (vote counts)            │       (vote counts)            │
-```
-
 #### Key Socket Events
 
 | Event | Direction | Purpose |
 |-------|-----------|---------|
 | `create-room` | Client → Server | Host creates a new game room |
 | `join-room` | Client → Server | Player joins with room code |
-| `room-updated` | Server → All Clients | Broadcast state changes |
+| `room-updated` | Server → All | Broadcast state changes |
 | `start-game` | Client → Server | Host starts the game |
 | `skip-turn` | Client → Server | Player finishes speaking |
 | `cast-vote` | Client → Server | Player votes for suspect |
@@ -208,18 +173,15 @@ function startTurnTimer(roomCode: string) {
 Voice chat uses **WebRTC for peer-to-peer audio** with Socket.io as the signaling server:
 
 ```
-Player A                    Server                    Player B
-    │                          │                          │
-    │ ── voice:offer ────────▶│                          │
-    │                          │──── voice:offer ───────▶│
-    │                          │                          │
-    │                          │◀──── voice:answer ──────│
-    │ ◀── voice:answer ───────│                          │
-    │                          │                          │
-    │ ── voice:ice-candidate ─▶│                          │
-    │                          │── voice:ice-candidate ──▶│
-    │                          │                          │
-    │ ◀═══════════ P2P Audio Stream ═══════════════════▶│
+Player A              Server              Player B
+    │                    │                    │
+    │── voice:offer ────▶│                    │
+    │                    │── voice:offer ────▶│
+    │                    │                    │
+    │                    │◀── voice:answer ───│
+    │◀── voice:answer ───│                    │
+    │                    │                    │
+    │◀════════ P2P Audio Stream ════════════▶│
 ```
 
 ---
@@ -230,86 +192,70 @@ Player A                    Server                    Player B
 
 This entire project was **built with AI assistance** using GitHub Copilot (Claude). The AI was used for:
 
-#### 1. **Architecture Design**
-- Suggested the client-server separation pattern
-- Recommended Socket.io for real-time communication
-- Proposed the phase-based game state machine
-
-#### 2. **Code Generation**
-- Generated TypeScript interfaces and types
-- Created Socket.io event handlers
-- Built React components with hooks
-- Implemented WebRTC voice chat logic
-
-#### 3. **UI/UX Design**
-- Designed the "party game" aesthetic
-- Created CSS animations and effects
-- Implemented glassmorphism styling
-- Made the UI mobile-responsive
-
-#### 4. **Game Logic**
-- Word dataset creation (10 domains × 6 words)
-- Role assignment algorithms
-- Win condition detection
-- Vote tallying and elimination
-
-#### 5. **Bug Fixing**
-- Identified race conditions in socket listeners
-- Fixed TypeScript type errors
-- Resolved WebRTC connection issues
+| Area | How AI Helped |
+|------|---------------|
+| **Architecture** | Client-server pattern, Socket.io, state machine design |
+| **Code Generation** | TypeScript interfaces, handlers, React components |
+| **UI/UX Design** | Party game aesthetic, animations, glassmorphism |
+| **Game Logic** | Word datasets, role assignment, win conditions |
+| **Bug Fixing** | Race conditions, type errors, WebRTC issues |
 
 ### AI-Assisted Workflow
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  Describe   │────▶│ AI Generates│────▶│   Human     │────▶│   Iterate   │
-│  Feature    │     │   Code      │     │   Reviews   │     │  & Refine   │
-└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+┌────────────┐    ┌────────────┐    ┌────────────┐    ┌────────────┐
+│  Describe  │───▶│ AI Writes  │───▶│   Human    │───▶│  Iterate   │
+│  Feature   │    │   Code     │    │  Reviews   │    │ & Refine   │
+└────────────┘    └────────────┘    └────────────┘    └────────────┘
 ```
 
 ### Potential Future AI Features
 
 | Feature | Description |
 |---------|-------------|
-| **AI Players** | Bot players that can describe words and vote intelligently |
-| **Smart Word Generation** | Use LLMs to generate contextual word pairs for Spy mode |
-| **Cheat Detection** | Analyze player descriptions to detect if they're revealing too much |
-| **Dynamic Difficulty** | Adjust word similarity based on player skill level |
+| **AI Players** | Bot players that can describe words and vote |
+| **Smart Words** | LLMs generate contextual word pairs |
+| **Cheat Detection** | Analyze if players reveal too much |
+| **Dynamic Difficulty** | Adjust word similarity by skill |
 
 ---
 
 ## 🛠 Tech Stack
 
 ### Frontend
+
 | Technology | Purpose |
 |------------|---------|
-| **Next.js 15** | React framework with App Router |
-| **React 19** | UI components |
-| **TypeScript** | Type safety |
-| **Tailwind CSS v4** | Styling |
-| **Socket.io Client** | Real-time communication |
-| **WebRTC** | Peer-to-peer voice chat |
+| Next.js 15 | React framework with App Router |
+| React 19 | UI components |
+| TypeScript | Type safety |
+| Tailwind CSS v4 | Styling |
+| Socket.io Client | Real-time communication |
+| WebRTC | Peer-to-peer voice chat |
 
 ### Backend
+
 | Technology | Purpose |
 |------------|---------|
-| **Node.js** | Runtime |
-| **Express** | HTTP server |
-| **Socket.io** | WebSocket server |
-| **TypeScript** | Type safety |
+| Node.js | Runtime |
+| Express | HTTP server |
+| Socket.io | WebSocket server |
+| TypeScript | Type safety |
 
 ### Infrastructure
+
 | Service | Purpose |
 |---------|---------|
-| **Vercel** | Frontend hosting |
-| **Railway/Render** | Backend hosting |
-| **GitHub** | Version control |
+| Vercel | Frontend hosting |
+| Railway | Backend hosting |
+| GitHub | Version control |
 
 ---
 
 ## 🚀 Setup & Installation
 
 ### Prerequisites
+
 - Node.js 18+
 - npm or yarn
 
@@ -353,7 +299,6 @@ NEXT_PUBLIC_SOCKET_URL=https://your-backend-url.com
 **Backend**
 ```
 PORT=4000
-CORS_ORIGIN=https://your-frontend-url.com
 ```
 
 ### Deploy to Vercel + Railway
@@ -372,10 +317,4 @@ MIT License - Feel free to use, modify, and distribute.
 
 ---
 
-## 🙏 Credits
-
 Built with ❤️ using AI-assisted development (GitHub Copilot / Claude)
-
-**Technologies:** Next.js, Socket.io, WebRTC, Tailwind CSS
-#   S h a d o w S i g n a l  
- 
