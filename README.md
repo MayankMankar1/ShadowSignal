@@ -377,3 +377,5 @@ MIT License - Feel free to use, modify, and distribute.
 Built with ❤️ using AI-assisted development (GitHub Copilot / Claude)
 
 **Technologies:** Next.js, Socket.io, WebRTC, Tailwind CSS
+#   S h a d o w S i g n a l  
+ 
