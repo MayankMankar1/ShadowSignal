@@ -7,6 +7,7 @@ type PeerConnection = {
   odId: string;
   connection: RTCPeerConnection;
   stream?: MediaStream;
+  audioElement?: HTMLAudioElement;
 };
 
 type VoicePeer = {
@@ -18,6 +19,8 @@ type VoicePeer = {
 const ICE_SERVERS = [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" },
+  { urls: "stun:stun2.l.google.com:19302" },
+  { urls: "stun:stun3.l.google.com:19302" },
 ];
 
 export function useVoiceChat(roomCode: string, playerId: string) {
@@ -34,10 +37,12 @@ export function useVoiceChat(roomCode: string, playerId: string) {
 
   // Create peer connection
   const createPeerConnection = useCallback((targetId: string): RTCPeerConnection => {
+    console.log("🎙️ Creating peer connection for:", targetId);
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
 
     pc.onicecandidate = (event) => {
       if (event.candidate) {
+        console.log("🧊 Sending ICE candidate to:", targetId);
         socket.emit("voice:ice-candidate", {
           targetId,
           candidate: event.candidate,
@@ -46,13 +51,28 @@ export function useVoiceChat(roomCode: string, playerId: string) {
     };
 
     pc.ontrack = (event) => {
+      console.log("🔊 Received audio track from:", targetId);
       const stream = event.streams[0];
       if (stream) {
-        // Create audio element for playback
-        const audio = new Audio();
+        // Create audio element for playback - IMPORTANT: must add to DOM
+        const audio = document.createElement("audio");
+        audio.id = `audio-${targetId}`;
         audio.srcObject = stream;
         audio.autoplay = true;
-        (audio as HTMLAudioElement & { playsInline: boolean }).playsInline = true;
+        audio.playsInline = true;
+        audio.volume = 1.0;
+        
+        // Remove existing audio element if any
+        const existing = document.getElementById(`audio-${targetId}`);
+        if (existing) existing.remove();
+        
+        // Add to DOM (required for autoplay in many browsers)
+        document.body.appendChild(audio);
+        
+        // Play with user interaction fallback
+        audio.play().catch((err) => {
+          console.log("Audio autoplay blocked, will play on user interaction:", err);
+        });
         
         // Set up volume analyzer for speaking detection
         if (!audioContextRef.current) {
@@ -66,14 +86,16 @@ export function useVoiceChat(roomCode: string, playerId: string) {
         analyzersRef.current.set(targetId, analyser);
 
         // Update peer state
-        const existing = peersRef.current.get(targetId);
-        if (existing) {
-          existing.stream = stream;
+        const existingPeer = peersRef.current.get(targetId);
+        if (existingPeer) {
+          existingPeer.stream = stream;
+          existingPeer.audioElement = audio;
         }
       }
     };
 
     pc.onconnectionstatechange = () => {
+      console.log(`📡 Connection state for ${targetId}:`, pc.connectionState);
       if (pc.connectionState === "disconnected" || pc.connectionState === "failed") {
         removePeer(targetId);
       }
@@ -87,6 +109,11 @@ export function useVoiceChat(roomCode: string, playerId: string) {
     const peer = peersRef.current.get(odId);
     if (peer) {
       peer.connection.close();
+      // Remove audio element from DOM
+      if (peer.audioElement) {
+        peer.audioElement.srcObject = null;
+        peer.audioElement.remove();
+      }
       peersRef.current.delete(odId);
     }
     analyzersRef.current.delete(odId);
@@ -97,9 +124,39 @@ export function useVoiceChat(roomCode: string, playerId: string) {
     });
   }, []);
 
+  // Start connection with a peer (initiator side)
+  const connectToPeer = useCallback(async (targetId: string) => {
+    if (!localStreamRef.current) return;
+    if (peersRef.current.has(targetId)) return; // Already connected
+    
+    console.log("🤝 Initiating connection to peer:", targetId);
+    
+    const pc = createPeerConnection(targetId);
+    peersRef.current.set(targetId, { odId: targetId, connection: pc });
+    
+    setVoicePeers((prev) => {
+      const next = new Map(prev);
+      next.set(targetId, { odId: targetId, isMuted: true, isSpeaking: false });
+      return next;
+    });
+    
+    // Add local tracks
+    localStreamRef.current.getTracks().forEach((track) => {
+      pc.addTrack(track, localStreamRef.current!);
+    });
+    
+    // Create and send offer
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    
+    console.log("📤 Sending offer to:", targetId);
+    socket.emit("voice:offer", { targetId, offer });
+  }, [createPeerConnection]);
+
   // Initialize voice chat
   const enableVoice = useCallback(async () => {
     try {
+      console.log("🎤 Requesting microphone access...");
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -112,11 +169,13 @@ export function useVoiceChat(roomCode: string, playerId: string) {
       setHasPermission(true);
       setIsVoiceEnabled(true);
 
-      // Mute by default
+      // Start unmuted so others can hear you
       stream.getAudioTracks().forEach((track) => {
-        track.enabled = false;
+        track.enabled = true;
       });
+      setIsMuted(false);
 
+      console.log("✅ Microphone access granted, announcing to room...");
       // Announce to room that we're ready for voice
       socket.emit("voice:ready", { roomCode });
 
@@ -124,7 +183,7 @@ export function useVoiceChat(roomCode: string, playerId: string) {
       console.error("Failed to get microphone permission:", err);
       setHasPermission(false);
     }
-  }, [roomCode, createPeerConnection]);
+  }, [roomCode]);
 
   // Disable voice chat
   const disableVoice = useCallback(() => {
@@ -155,7 +214,20 @@ export function useVoiceChat(roomCode: string, playerId: string) {
   useEffect(() => {
     if (!isVoiceEnabled) return;
 
+    // When another peer is ready for voice, connect to them
+    const handlePeerReady = ({ odId }: { odId: string }) => {
+      console.log("👋 Peer ready for voice:", odId);
+      connectToPeer(odId);
+    };
+
+    // Handle existing peers in the room (sent when we join)
+    const handleExistingPeers = ({ peers }: { peers: string[] }) => {
+      console.log("👥 Existing voice peers:", peers);
+      peers.forEach((odId) => connectToPeer(odId));
+    };
+
     const handleOffer = async ({ fromId, offer }: { fromId: string; offer: RTCSessionDescriptionInit }) => {
+      console.log("📥 Received offer from:", fromId);
       let peer = peersRef.current.get(fromId);
       if (!peer) {
         const pc = createPeerConnection(fromId);
@@ -183,19 +255,21 @@ export function useVoiceChat(roomCode: string, playerId: string) {
 
       const answer = await peer.connection.createAnswer();
       await peer.connection.setLocalDescription(answer);
+      console.log("📤 Sending answer to:", fromId);
       socket.emit("voice:answer", { targetId: fromId, answer });
     };
 
     const handleAnswer = async ({ fromId, answer }: { fromId: string; answer: RTCSessionDescriptionInit }) => {
+      console.log("📥 Received answer from:", fromId);
       const peer = peersRef.current.get(fromId);
-      if (peer) {
+      if (peer && peer.connection.signalingState === "have-local-offer") {
         await peer.connection.setRemoteDescription(new RTCSessionDescription(answer));
       }
     };
 
     const handleIceCandidate = async ({ fromId, candidate }: { fromId: string; candidate: RTCIceCandidateInit }) => {
       const peer = peersRef.current.get(fromId);
-      if (peer) {
+      if (peer && peer.connection.remoteDescription) {
         await peer.connection.addIceCandidate(new RTCIceCandidate(candidate));
       }
     };
@@ -212,9 +286,12 @@ export function useVoiceChat(roomCode: string, playerId: string) {
     };
 
     const handlePeerLeft = ({ odId }: { odId: string }) => {
+      console.log("👋 Peer left:", odId);
       removePeer(odId);
     };
 
+    socket.on("voice:peer-ready", handlePeerReady);
+    socket.on("voice:existing-peers", handleExistingPeers);
     socket.on("voice:offer", handleOffer);
     socket.on("voice:answer", handleAnswer);
     socket.on("voice:ice-candidate", handleIceCandidate);
@@ -222,13 +299,15 @@ export function useVoiceChat(roomCode: string, playerId: string) {
     socket.on("voice:peer-left", handlePeerLeft);
 
     return () => {
+      socket.off("voice:peer-ready", handlePeerReady);
+      socket.off("voice:existing-peers", handleExistingPeers);
       socket.off("voice:offer", handleOffer);
       socket.off("voice:answer", handleAnswer);
       socket.off("voice:ice-candidate", handleIceCandidate);
       socket.off("voice:mute-state", handleMuteState);
       socket.off("voice:peer-left", handlePeerLeft);
     };
-  }, [isVoiceEnabled, createPeerConnection, removePeer]);
+  }, [isVoiceEnabled, createPeerConnection, removePeer, connectToPeer]);
 
   // Speaking detection loop
   useEffect(() => {

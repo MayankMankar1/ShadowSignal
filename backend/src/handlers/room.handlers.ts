@@ -12,6 +12,9 @@ import {
   findRoomByPlayerId,
 } from "../state/rooms";
 
+// Track voice-ready players per room
+const voiceReadyPlayers: Map<string, Set<string>> = new Map();
+
 export function registerRoomHandlers(io: Server, socket: Socket) {
   // CREATE ROOM
   socket.on("create-room", ({ name }) => {
@@ -130,8 +133,34 @@ export function registerRoomHandlers(io: Server, socket: Socket) {
 
   // ============ VOICE CHAT SIGNALING ============
 
+  // Player is ready for voice chat
+  socket.on("voice:ready", ({ roomCode }) => {
+    console.log(`🎙️ Player ${socket.id} ready for voice in room ${roomCode}`);
+    
+    // Get or create the set of voice-ready players for this room
+    if (!voiceReadyPlayers.has(roomCode)) {
+      voiceReadyPlayers.set(roomCode, new Set());
+    }
+    const roomVoicePeers = voiceReadyPlayers.get(roomCode)!;
+    
+    // Send existing voice peers to the new player
+    const existingPeers = Array.from(roomVoicePeers).filter(id => id !== socket.id);
+    if (existingPeers.length > 0) {
+      socket.emit("voice:existing-peers", { peers: existingPeers });
+    }
+    
+    // Notify existing peers about this new voice participant
+    existingPeers.forEach(peerId => {
+      io.to(peerId).emit("voice:peer-ready", { odId: socket.id });
+    });
+    
+    // Add this player to voice-ready set
+    roomVoicePeers.add(socket.id);
+  });
+
   // WebRTC signaling: relay offer to specific peer
   socket.on("voice:offer", ({ targetId, offer }) => {
+    console.log(`📤 Relaying offer from ${socket.id} to ${targetId}`);
     io.to(targetId).emit("voice:offer", {
       fromId: socket.id,
       offer,
@@ -140,6 +169,7 @@ export function registerRoomHandlers(io: Server, socket: Socket) {
 
   // WebRTC signaling: relay answer to specific peer
   socket.on("voice:answer", ({ targetId, answer }) => {
+    console.log(`📤 Relaying answer from ${socket.id} to ${targetId}`);
     io.to(targetId).emit("voice:answer", {
       fromId: socket.id,
       answer,
@@ -167,6 +197,15 @@ export function registerRoomHandlers(io: Server, socket: Socket) {
     try {
       const roomCode = findRoomByPlayerId(socket.id);
       if (roomCode) {
+        // Remove from voice-ready players
+        const roomVoicePeers = voiceReadyPlayers.get(roomCode);
+        if (roomVoicePeers) {
+          roomVoicePeers.delete(socket.id);
+          if (roomVoicePeers.size === 0) {
+            voiceReadyPlayers.delete(roomCode);
+          }
+        }
+
         // Notify others about voice peer leaving
         socket.to(roomCode).emit("voice:peer-left", { odId: socket.id });
 
@@ -177,7 +216,8 @@ export function registerRoomHandlers(io: Server, socket: Socket) {
             io.to(p.id).emit("room-updated", getClientRoom(updated, p.id));
           }
         } else {
-          // Room was deleted
+          // Room was deleted - clean up voice tracking
+          voiceReadyPlayers.delete(roomCode);
           io.to(roomCode).emit("room-deleted", { roomCode });
         }
       }
