@@ -8,7 +8,7 @@ A real-time multiplayer social deduction party game built with modern web techno
 
 ---
 
-## 📖 Table of Contents
+##  Table of Contents
 
 - [Game Overview](#-game-overview)
 - [Architecture](#-architecture)
@@ -20,7 +20,7 @@ A real-time multiplayer social deduction party game built with modern web techno
 
 ---
 
-## 🎮 Game Overview
+##  Game Overview
 
 Shadow Signal is a social deduction game where players try to identify the imposter among them. Each player receives a secret word from the same category, except for the imposter who either has no word (Infiltrator mode) or a similar but different word (Spy mode).
 
@@ -28,8 +28,8 @@ Shadow Signal is a social deduction game where players try to identify the impos
 
 | Mode | Description |
 |------|-------------|
-| 🎭 **Infiltrator** | One player has NO word and must blend in by listening to others |
-| 🔍 **Spy** | One player has a SIMILAR word and must avoid detection |
+|  **Infiltrator** | One player has NO word and must blend in by listening to others |
+|  **Spy** | One player has a SIMILAR word and must avoid detection |
 
 ### Game Flow
 
@@ -121,7 +121,7 @@ shadow-signal/
 
 ---
 
-## ⚡ Real-time Logic
+##  Real-time Logic
 
 ### Socket.io Event Flow
 
@@ -186,7 +186,7 @@ Player A              Server              Player B
 
 ---
 
-## 🤖 AI Integration
+##  AI Integration
 
 ### Development Process
 
@@ -252,7 +252,7 @@ This entire project was **built with AI assistance** using GitHub Copilot (Claud
 
 ---
 
-## 🚀 Setup & Installation
+## Setup & Installation
 
 ### Prerequisites
 
@@ -287,7 +287,7 @@ Open `http://localhost:3000` to play!
 
 ---
 
-## 🌐 Deployment
+##  Deployment
 
 ### Environment Variables
 
@@ -307,7 +307,7 @@ PORT=4000
 2. Deploy backend to Railway (set root to `backend`)
 3. Deploy frontend to Vercel (set root to `frontend`)
 4. Add environment variables
-5. Play! 🎉
+5. Play! 
 
 ---
 
